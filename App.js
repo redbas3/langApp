@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
-import { Animated, TouchableOpacity } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Animated, Easing, TouchableOpacity } from "react-native";
 import styled from "styled-components";
 
 const Container = styled.View`
@@ -18,20 +18,22 @@ const Box = styled.View`
 const AnimatedBox = Animated.createAnimatedComponent(Box);
 
 export default function App() {
-  const Y = new Animated.Value(0);
+  const [up, setUp] = useState(false);
+  const Y = useRef(new Animated.Value(0)).current;
+  const toggleUp = () => setUp((prev) => !prev);
   const moveUp = () => {
-    // Animated.timing(Y, {
+    Animated.timing(Y, {
+      toValue: up ? 200 : -200,
+      useNativeDriver: true,
+      easing: Easing.elastic(5),
+    }).start(toggleUp);
+    // Animated.spring(Y, {
     //   toValue: 200,
     //   useNativeDriver: true,
+    //   bounciness: 15,
+    //   // friction: 1,
+    //   // tension: 100,
     // }).start();
-
-    Animated.spring(Y, {
-      toValue: 200,
-      useNativeDriver: true,
-      // bounciness: 15,
-      friction: 1,
-      tension: 100,
-    }).start();
   };
 
   Y.addListener(() => console.log(Y));
