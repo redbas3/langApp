@@ -17,89 +17,63 @@ const Container = styled.View`
 
 const Box = styled.View`
   background-color: tomato;
-  width: 200px;
-  height: 200px;
+  width: 160px;
+  height: 160px;
 `;
 
 const AnimatedBox = Animated.createAnimatedComponent(Box);
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
+const screenTop = -SCREEN_HEIGHT / 2 + 80;
+const screenBottom = SCREEN_HEIGHT / 2 - 80;
+const screenLeft = -SCREEN_WIDTH / 2 + 80;
+const screenRight = SCREEN_WIDTH / 2 - 80;
+
 export default function App() {
-  const position = useRef(
-    new Animated.ValueXY({
-      x: -SCREEN_WIDTH / 2 + 100,
-      y: -SCREEN_HEIGHT / 2 + 100,
-    })
-  ).current;
-  const topLeft = Animated.timing(position, {
-    toValue: {
-      x: -SCREEN_WIDTH / 2 + 100,
-      y: -SCREEN_HEIGHT / 2 + 100,
-    },
-    useNativeDriver: true,
-  });
-  const bottomLeft = Animated.timing(position, {
-    toValue: {
-      x: -SCREEN_WIDTH / 2 + 100,
-      y: SCREEN_HEIGHT / 2 - 100,
-    },
-    useNativeDriver: true,
-  });
-  const bottomRight = Animated.timing(position, {
-    toValue: {
-      x: SCREEN_WIDTH / 2 - 100,
-      y: SCREEN_HEIGHT / 2 - 100,
-    },
-    useNativeDriver: true,
-  });
-  const topRight = Animated.timing(position, {
-    toValue: {
-      x: SCREEN_WIDTH / 2 - 100,
-      y: -SCREEN_HEIGHT / 2 + 100,
-    },
-    useNativeDriver: true,
-  });
-  const moveUp = () => {
-    Animated.loop(
-      Animated.sequence([bottomLeft, bottomRight, topRight, topLeft])
-    ).start();
-  };
+  const positionX = useRef(new Animated.Value(screenLeft)).current;
+  const positionY = useRef(new Animated.Value(screenBottom)).current;
 
-  const rotationValue = position.y.interpolate({
-    inputRange: [-300, 300],
-    outputRange: ["-360deg", "360deg"],
+  const toLeft = Animated.timing(positionX, {
+    toValue: screenLeft,
+    useNativeDriver: true,
+    duration: 500,
+  });
+  const toRight = Animated.timing(positionX, {
+    toValue: screenRight,
+    useNativeDriver: true,
+    duration: 500,
   });
 
-  const borderRadius = position.y.interpolate({
-    inputRange: [-300, 300],
-    outputRange: [100, 0],
+  const toBottom = Animated.timing(positionY, {
+    toValue: screenBottom,
+    useNativeDriver: true,
+    duration: 1700,
   });
 
-  const bgColor = position.y.interpolate({
-    inputRange: [-300, 300],
-    outputRange: ["rgb(255,99,71)", "rgb(71,166,255)"],
+  const toTop = Animated.timing(positionY, {
+    toValue: screenTop,
+    useNativeDriver: true,
+    duration: 1700,
   });
 
-  // position.addListener(() => console.log(position.getTranslateTransform()));
-  // position.addListener(() => console.log(rotationValue));
-  // console.log(opacityValue);
+  Animated.loop(Animated.sequence([toRight, toLeft])).start();
+  Animated.loop(Animated.sequence([toTop, toBottom])).start();
+
+  const borderRadius = positionX.interpolate({
+    inputRange: [screenLeft, screenRight],
+    outputRange: [100, 10],
+  });
 
   return (
     <Container>
-      <Pressable onPress={moveUp}>
-        <AnimatedBox
-          onPress={moveUp}
-          style={{
-            borderRadius,
-            backgroundColor: bgColor,
-            transform: [
-              // { rotateY: rotationValue },
-              ...position.getTranslateTransform(),
-            ],
-          }}
-        />
-      </Pressable>
+      <AnimatedBox
+        style={{
+          borderRadius,
+          backgroundColor: "tomato",
+          transform: [{ translateX: positionX }, { translateY: positionY }],
+        }}
+      />
     </Container>
   );
 }
