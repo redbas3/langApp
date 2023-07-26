@@ -1,12 +1,5 @@
-import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useRef, useState } from "react";
-import {
-  Animated,
-  Dimensions,
-  Easing,
-  Pressable,
-  TouchableOpacity,
-} from "react-native";
+import React, { useRef } from "react";
+import { Animated, Dimensions } from "react-native";
 import styled from "styled-components";
 
 const Container = styled.View`
@@ -30,6 +23,9 @@ const screenBottom = SCREEN_HEIGHT / 2 - 80;
 const screenLeft = -SCREEN_WIDTH / 2 + 80;
 const screenRight = SCREEN_WIDTH / 2 - 80;
 
+const durationX = 500;
+const durationY = 1700;
+
 export default function App() {
   const positionX = useRef(new Animated.Value(screenLeft)).current;
   const positionY = useRef(new Animated.Value(screenBottom)).current;
@@ -37,24 +33,24 @@ export default function App() {
   const toLeft = Animated.timing(positionX, {
     toValue: screenLeft,
     useNativeDriver: true,
-    duration: 500,
+    duration: durationX,
   });
   const toRight = Animated.timing(positionX, {
     toValue: screenRight,
     useNativeDriver: true,
-    duration: 500,
+    duration: durationX,
   });
 
   const toBottom = Animated.timing(positionY, {
     toValue: screenBottom,
     useNativeDriver: true,
-    duration: 1700,
+    duration: durationY,
   });
 
   const toTop = Animated.timing(positionY, {
     toValue: screenTop,
     useNativeDriver: true,
-    duration: 1700,
+    duration: durationY,
   });
 
   Animated.loop(Animated.sequence([toRight, toLeft])).start();
