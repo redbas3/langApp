@@ -19,14 +19,14 @@ const AnimatedBox = Animated.createAnimatedComponent(Box);
 
 export default function App() {
   const [up, setUp] = useState(false);
-  const Y_POSITION = useRef(new Animated.Value(300)).current;
+  const position = useRef(new Animated.ValueXY({ x: 0, y: 300 })).current;
   const toggleUp = () => setUp((prev) => !prev);
   const moveUp = () => {
-    Animated.timing(Y_POSITION, {
+    Animated.timing(position, {
       toValue: up ? 300 : -300,
       useNativeDriver: true,
     }).start(toggleUp);
-    // Animated.spring(Y_POSITION, {
+    // Animated.spring(position, {
     //   toValue: 200,
     //   useNativeDriver: true,
     //   bounciness: 15,
@@ -35,19 +35,24 @@ export default function App() {
     // }).start();
   };
 
-  const opacityValue = Y_POSITION.interpolate({
-    inputRange: [-300, 100, 300],
-    outputRange: [1, 0.5, 1],
+  const rotationValue = position.y.interpolate({
+    inputRange: [-300, 300],
+    outputRange: ["-360deg", "360deg"],
   });
 
-  // Y_POSITION.addListener(() => console.log(Y_POSITION));
-  Y_POSITION.addListener(() => console.log(opacityValue));
-  console.log(opacityValue);
-
-  const borderRadius = Y_POSITION.interpolate({
+  const borderRadius = position.y.interpolate({
     inputRange: [-300, 300],
     outputRange: [100, 0],
   });
+
+  const bgColor = position.y.interpolate({
+    inputRange: [-300, 300],
+    outputRange: ["rgb(255,99,71)", "rgb(71,166,255)"],
+  });
+
+  // position.addListener(() => console.log(position));
+  position.addListener(() => console.log(rotationValue));
+  // console.log(opacityValue);
 
   return (
     <Container>
@@ -55,9 +60,9 @@ export default function App() {
         <AnimatedBox
           onPress={moveUp}
           style={{
-            opacity: opacityValue,
-            borderRadius: borderRadius,
-            transform: [{ translateY: Y_POSITION }],
+            borderRadius,
+            backgroundColor: bgColor,
+            transform: [{ translateY: position.y }, { rotateY: rotationValue }],
           }}
         />
       </Pressable>
