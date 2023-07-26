@@ -1,6 +1,12 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, Easing, Pressable, TouchableOpacity } from "react-native";
+import {
+  Animated,
+  Dimensions,
+  Easing,
+  Pressable,
+  TouchableOpacity,
+} from "react-native";
 import styled from "styled-components";
 
 const Container = styled.View`
@@ -17,22 +23,47 @@ const Box = styled.View`
 
 const AnimatedBox = Animated.createAnimatedComponent(Box);
 
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
 export default function App() {
-  const [up, setUp] = useState(false);
-  const position = useRef(new Animated.ValueXY({ x: 0, y: 300 })).current;
-  const toggleUp = () => setUp((prev) => !prev);
+  const position = useRef(
+    new Animated.ValueXY({
+      x: -SCREEN_WIDTH / 2 + 100,
+      y: -SCREEN_HEIGHT / 2 + 100,
+    })
+  ).current;
+  const topLeft = Animated.timing(position, {
+    toValue: {
+      x: -SCREEN_WIDTH / 2 + 100,
+      y: -SCREEN_HEIGHT / 2 + 100,
+    },
+    useNativeDriver: true,
+  });
+  const bottomLeft = Animated.timing(position, {
+    toValue: {
+      x: -SCREEN_WIDTH / 2 + 100,
+      y: SCREEN_HEIGHT / 2 - 100,
+    },
+    useNativeDriver: true,
+  });
+  const bottomRight = Animated.timing(position, {
+    toValue: {
+      x: SCREEN_WIDTH / 2 - 100,
+      y: SCREEN_HEIGHT / 2 - 100,
+    },
+    useNativeDriver: true,
+  });
+  const topRight = Animated.timing(position, {
+    toValue: {
+      x: SCREEN_WIDTH / 2 - 100,
+      y: -SCREEN_HEIGHT / 2 + 100,
+    },
+    useNativeDriver: true,
+  });
   const moveUp = () => {
-    Animated.timing(position, {
-      toValue: up ? 300 : -300,
-      useNativeDriver: true,
-    }).start(toggleUp);
-    // Animated.spring(position, {
-    //   toValue: 200,
-    //   useNativeDriver: true,
-    //   bounciness: 15,
-    //   // friction: 1,
-    //   // tension: 100,
-    // }).start();
+    Animated.loop(
+      Animated.sequence([bottomLeft, bottomRight, topRight, topLeft])
+    ).start();
   };
 
   const rotationValue = position.y.interpolate({
@@ -50,8 +81,8 @@ export default function App() {
     outputRange: ["rgb(255,99,71)", "rgb(71,166,255)"],
   });
 
-  // position.addListener(() => console.log(position));
-  position.addListener(() => console.log(rotationValue));
+  // position.addListener(() => console.log(position.getTranslateTransform()));
+  // position.addListener(() => console.log(rotationValue));
   // console.log(opacityValue);
 
   return (
@@ -62,7 +93,10 @@ export default function App() {
           style={{
             borderRadius,
             backgroundColor: bgColor,
-            transform: [{ translateY: position.y }, { rotateY: rotationValue }],
+            transform: [
+              // { rotateY: rotationValue },
+              ...position.getTranslateTransform(),
+            ],
           }}
         />
       </Pressable>
