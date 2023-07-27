@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Animated, Dimensions } from "react-native";
+import { Animated, Dimensions, PanResponder } from "react-native";
 import styled from "styled-components";
 
 const Container = styled.View`
@@ -27,36 +27,17 @@ const durationX = 500;
 const durationY = 1700;
 
 export default function App() {
-  const positionX = useRef(new Animated.Value(screenLeft)).current;
-  const positionY = useRef(new Animated.Value(screenBottom)).current;
+  const position = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderMove: (_, { dx, dy }) => {
+        position.setValue({ x: dx, y: dy });
+      },
+    })
+  ).current;
 
-  const toLeft = Animated.timing(positionX, {
-    toValue: screenLeft,
-    useNativeDriver: true,
-    duration: durationX,
-  });
-  const toRight = Animated.timing(positionX, {
-    toValue: screenRight,
-    useNativeDriver: true,
-    duration: durationX,
-  });
-
-  const toBottom = Animated.timing(positionY, {
-    toValue: screenBottom,
-    useNativeDriver: true,
-    duration: durationY,
-  });
-
-  const toTop = Animated.timing(positionY, {
-    toValue: screenTop,
-    useNativeDriver: true,
-    duration: durationY,
-  });
-
-  Animated.loop(Animated.sequence([toRight, toLeft])).start();
-  Animated.loop(Animated.sequence([toTop, toBottom])).start();
-
-  const borderRadius = positionX.interpolate({
+  const borderRadius = position.x.interpolate({
     inputRange: [screenLeft, screenRight],
     outputRange: [100, 10],
   });
@@ -64,10 +45,11 @@ export default function App() {
   return (
     <Container>
       <AnimatedBox
+        {...panResponder.panHandlers}
         style={{
           borderRadius,
           backgroundColor: "tomato",
-          transform: [{ translateX: positionX }, { translateY: positionY }],
+          transform: [...position.getTranslateTransform()],
         }}
       />
     </Container>
