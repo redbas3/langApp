@@ -22,36 +22,66 @@ const Card = styled.View`
 const AnimatedCard = Animated.createAnimatedComponent(Card);
 
 export default function App() {
+  // Values
+  const scale = useRef(new Animated.Value(1)).current;
+  const position = useRef(new Animated.Value(0)).current;
+  const rotation = position.interpolate({
+    inputRange: [-250, 250],
+    outputRange: ["-15deg", "15deg"],
+  });
+
+  // position.addListener(() => console.log(position, rotation));
+
+  // Animations
+  const onPressOut = Animated.spring(scale, {
+    toValue: 1,
+    useNativeDriver: true,
+  });
+  const onPressIn = Animated.spring(scale, {
+    toValue: 0.95,
+    useNativeDriver: true,
+  });
+  const goCenter = Animated.spring(position, {
+    toValue: 0,
+    useNativeDriver: true,
+  });
+
+  // Pan Responder
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onPanResponderGrant: () => onPressIn(),
+      onPanResponderGrant: () => onPressIn.start(),
       onPanResponderMove: (_, { dx }) => {
         position.setValue(dx);
       },
-      onPanResponderRelease: () => {
-        Animated.parallel([
-          onPressOut(),
+      onPanResponderRelease: (_, { dx }) => {
+        if (dx < -320) {
           Animated.spring(position, {
-            toValue: 0,
+            toValue: -500,
             useNativeDriver: true,
-          }),
-        ]).start();
+          }).start();
+        } else if (dx > 320) {
+          Animated.spring(position, {
+            toValue: 500,
+            useNativeDriver: true,
+          }).start();
+        } else {
+          Animated.parallel([onPressOut, goCenter]).start();
+        }
       },
     })
   ).current;
-  const onPressIn = () =>
-    Animated.spring(scale, { toValue: 0.95, useNativeDriver: true }).start();
-  const onPressOut = () =>
-    Animated.spring(scale, { toValue: 1, useNativeDriver: true });
-  const scale = useRef(new Animated.Value(1)).current;
-  const position = useRef(new Animated.Value(0)).current;
+
   return (
     <Container>
       <AnimatedCard
         {...panResponder.panHandlers}
         style={{
-          transform: [{ scale }, { translateX: position }],
+          transform: [
+            { scale },
+            { translateX: position },
+            { rotateZ: rotation },
+          ],
         }}
       >
         <Ionicons name="pizza" size={98} color="#192a56" />
