@@ -1,7 +1,8 @@
-import React, { useRef } from "react";
-import { Animated, Dimensions, PanResponder, ViewBase } from "react-native";
+import React, { useRef, useState } from "react";
+import { Animated, Dimensions, PanResponder, Text } from "react-native";
 import styled from "styled-components";
 import { Ionicons } from "@expo/vector-icons";
+import icons from "./icons";
 
 const Container = styled.View`
   flex: 1;
@@ -87,9 +88,9 @@ export default function App() {
       },
       onPanResponderRelease: (_, { dx }) => {
         if (dx < -250) {
-          goLeft.start();
+          goLeft.start(onDismiss);
         } else if (dx > 250) {
-          goRight.start();
+          goRight.start(onDismiss);
         } else {
           Animated.parallel([onPressOut, goCenter]).start();
         }
@@ -97,12 +98,20 @@ export default function App() {
     })
   ).current;
 
+  // State
+  const [index, setIndex] = useState(0);
+  const onDismiss = () => {
+    scale.setValue(1);
+    position.setValue(0);
+    setIndex((prev) => prev + 1);
+  };
+
   const closePress = () => {
-    goLeft.start();
+    goLeft.start(onDismiss);
   };
 
   const checkPress = () => {
-    goRight.start();
+    goRight.start(onDismiss);
   };
 
   return (
@@ -113,7 +122,7 @@ export default function App() {
             transform: [{ scale: secondScale }],
           }}
         >
-          <Ionicons name="beer" size={98} color="#192a56" />
+          <Ionicons name={icons[index + 1]} size={98} color="#192a56" />
         </AnimatedCard>
         <AnimatedCard
           {...panResponder.panHandlers}
@@ -125,7 +134,7 @@ export default function App() {
             ],
           }}
         >
-          <Ionicons name="pizza" size={98} color="#192a56" />
+          <Ionicons name={icons[index]} size={98} color="#192a56" />
         </AnimatedCard>
       </CardContainer>
       <BtnContainer>
